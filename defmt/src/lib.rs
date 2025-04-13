@@ -50,13 +50,9 @@ static DEFMT_VERSION: u8 = 0;
 pub static DEFMT_ENCODING: u8 = 0;
 
 mod encoding;
-#[doc(hidden)]
-pub mod export;
 mod formatter;
 mod impls;
 mod str;
-#[cfg(all(test, feature = "unstable-test"))]
-mod tests;
 mod traits;
 
 pub use crate::{
@@ -66,6 +62,18 @@ pub use crate::{
     str::Str,
     traits::{Format, Logger},
 };
+
+// HELP(gibbz): seems unused?
+#[cfg(not(feature = "unstable-test"))]
+mod id_ranges;
+#[cfg(not(feature = "unstable-test"))]
+pub use id_ranges::IdRanges;
+
+#[doc(hidden)]
+pub mod export;
+
+#[cfg(all(test, feature = "unstable-test"))]
+mod tests;
 
 #[cfg(all(test, not(feature = "unstable-test")))]
 compile_error!(
@@ -418,52 +426,6 @@ pub fn flush() {
                 _defmt_flush();
                 _defmt_release()
             }
-        }
-    }
-}
-
-#[cfg(not(feature = "unstable-test"))]
-#[doc(hidden)]
-pub struct IdRanges {
-    pub trace: core::ops::Range<u16>,
-    pub debug: core::ops::Range<u16>,
-    pub info: core::ops::Range<u16>,
-    pub warn: core::ops::Range<u16>,
-    pub error: core::ops::Range<u16>,
-}
-
-#[cfg(not(feature = "unstable-test"))]
-impl IdRanges {
-    pub fn get() -> Self {
-        extern "C" {
-            static __DEFMT_MARKER_TRACE_START: u8;
-            static __DEFMT_MARKER_TRACE_END: u8;
-            static __DEFMT_MARKER_DEBUG_START: u8;
-            static __DEFMT_MARKER_DEBUG_END: u8;
-            static __DEFMT_MARKER_INFO_START: u8;
-            static __DEFMT_MARKER_INFO_END: u8;
-            static __DEFMT_MARKER_WARN_START: u8;
-            static __DEFMT_MARKER_WARN_END: u8;
-            static __DEFMT_MARKER_ERROR_START: u8;
-            static __DEFMT_MARKER_ERROR_END: u8;
-        }
-
-        let trace_start = unsafe { &__DEFMT_MARKER_TRACE_START as *const u8 as u16 };
-        let trace_end = unsafe { &__DEFMT_MARKER_TRACE_END as *const u8 as u16 };
-        let debug_start = unsafe { &__DEFMT_MARKER_DEBUG_START as *const u8 as u16 };
-        let debug_end = unsafe { &__DEFMT_MARKER_DEBUG_END as *const u8 as u16 };
-        let info_start = unsafe { &__DEFMT_MARKER_INFO_START as *const u8 as u16 };
-        let info_end = unsafe { &__DEFMT_MARKER_INFO_END as *const u8 as u16 };
-        let warn_start = unsafe { &__DEFMT_MARKER_WARN_START as *const u8 as u16 };
-        let warn_end = unsafe { &__DEFMT_MARKER_WARN_END as *const u8 as u16 };
-        let error_start = unsafe { &__DEFMT_MARKER_ERROR_START as *const u8 as u16 };
-        let error_end = unsafe { &__DEFMT_MARKER_ERROR_END as *const u8 as u16 };
-        Self {
-            trace: trace_start..trace_end,
-            debug: debug_start..debug_end,
-            info: info_start..info_end,
-            warn: warn_start..warn_end,
-            error: error_start..error_end,
         }
     }
 }
