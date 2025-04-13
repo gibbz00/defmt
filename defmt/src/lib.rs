@@ -54,14 +54,16 @@ mod encoding;
 pub mod export;
 mod formatter;
 mod impls;
+mod str;
 #[cfg(all(test, feature = "unstable-test"))]
 mod tests;
 mod traits;
 
 pub use crate::{
     encoding::Encoder,
-    formatter::{Formatter, Str},
+    formatter::Formatter,
     impls::adapter::{Debug2Format, Display2Format},
+    str::Str,
     traits::{Format, Logger},
 };
 
